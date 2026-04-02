@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bookmark, Heart, Copy, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { addBookmark, removeBookmark, addLike, removeLike } from '../services/api';
 
 const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontStyle = 'serif', userId, bookmarks, setBookmarks, likes, setLikes }) => {
     const [copiedVerse, setCopiedVerse] = useState(null);
@@ -65,10 +65,10 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
         try {
             const existing = bookmarks?.find(b => b.book === payload.book && b.chapter === payload.chapter && b.verse === payload.verse);
             if (existing) {
-                await api.removeBookmark(existing._id);
+                await removeBookmark(existing._id);
                 setBookmarks(bookmarks.filter(b => b._id !== existing._id));
             } else {
-                const added = await api.addBookmark(payload);
+                const added = await addBookmark(payload);
                 setBookmarks([...(bookmarks || []), added]);
             }
             // Trigger local update manually if needed by parent
@@ -84,10 +84,10 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
         try {
             const existing = likes?.find(l => l.book === payload.book && l.chapter === payload.chapter && l.verse === payload.verse);
             if (existing) {
-                await api.removeLike(existing._id);
+                await removeLike(existing._id);
                 setLikes(likes.filter(l => l._id !== existing._id));
             } else {
-                const added = await api.addLike(payload);
+                const added = await addLike(payload);
                 setLikes([...(likes || []), added]);
             }
             if (onUpdate) onUpdate();

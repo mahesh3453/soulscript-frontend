@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart, Trash2, ArrowRight, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import api from '../services/api';
+import { getBooks, getSpecificVerse, removeLike } from '../services/api';
 
 const Favorites = ({ language, userId, likes, setLikes }) => {
     const [books, setBooks] = useState([]);
@@ -16,8 +15,8 @@ const Favorites = ({ language, userId, likes, setLikes }) => {
             return;
         }
 
-        axios.get('http://localhost:5000/api/books')
-            .then(res => setBooks(res.data))
+        getBooks()
+            .then(data => setBooks(data))
             .catch(err => console.error('Failed to load books:', err));
             
         translateFavorites(likes);
@@ -31,7 +30,7 @@ const Favorites = ({ language, userId, likes, setLikes }) => {
                 marks.map(async (v) => {
                     const id = v.bookId || v.bookName || v.book;
                     try {
-                        const data = await api.getSpecificVerse(id, v.chapter, v.verse, language);
+                        const data = await getSpecificVerse(id, v.chapter, v.verse, language);
                         return { ...v, text: data.text, bookName: data.book };
                     } catch (e) {
                         return v;
@@ -46,7 +45,7 @@ const Favorites = ({ language, userId, likes, setLikes }) => {
 
     const handleDelete = async (verse) => {
         try {
-            await api.removeLike(verse._id);
+            await removeLike(verse._id);
             setLikes(likes.filter(l => l._id !== verse._id));
         } catch(error) {
             console.error(error);

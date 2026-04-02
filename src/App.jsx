@@ -6,10 +6,11 @@ import ReadBible from './pages/ReadBible';
 import Bookmarks from './pages/Bookmarks';
 import Favorites from './pages/Favorites';
 import Auth from './pages/Auth';
-import api from './services/api';
+import { getBookmarks, getLikes } from './services/api';
 import './index.css';
 
 function App() {
+  console.log("NEW BUILD VERSION 3");
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('soul-script-theme');
     return saved ? saved === 'dark' : true;
@@ -29,8 +30,8 @@ function App() {
 
   useEffect(() => {
     if (userId) {
-      api.getBookmarks(userId).then(data => setBookmarks(data)).catch(console.error);
-      api.getLikes(userId).then(data => setLikes(data)).catch(console.error);
+      getBookmarks(userId).then(data => setBookmarks(data)).catch(console.error);
+      getLikes(userId).then(data => setLikes(data)).catch(console.error);
     } else {
       setBookmarks([]);
       setLikes([]);

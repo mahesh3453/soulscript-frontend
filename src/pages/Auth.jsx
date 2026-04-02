@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import api from '../services/api';
+import { login, register } from '../services/api';
 
 const Auth = ({ setUserId }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -22,10 +22,10 @@ const Auth = ({ setUserId }) => {
         try {
             let data;
             if (isLogin) {
-                data = await api.login(identifier, password);
+                data = await login(identifier, password);
                 setSuccess('Login successful! Redirecting...');
             } else {
-                data = await api.register(identifier, password);
+                data = await register(identifier, password);
                 setSuccess('Account created successfully! Redirecting...');
             }
             

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MoodSelector from '../components/MoodSelector';
 import VerseCard from '../components/VerseCard';
-import api from '../services/api';
+import { getRandomVerse, getVerseByMood } from '../services/api';
 import { motion } from 'framer-motion';
 
 // Shared font key with the Read Bible page
@@ -49,7 +49,7 @@ const Home = ({ language }) => {
         setLoading(true);
         setError(null);
         try {
-            const data = await api.getRandomVerse(language);
+            const data = await getRandomVerse(language);
             setVerse(data);
             setSelectedMood(null);
         } catch (err) {
@@ -65,7 +65,7 @@ const Home = ({ language }) => {
         setError(null);
         if (!isLangChange) setSelectedMood(mood);
         try {
-            const data = await api.getVerseByMood(mood, language);
+            const data = await getVerseByMood(mood, language);
             setVerse(data);
         } catch (err) {
             setError('Heavenly connection lost (Server Error)');

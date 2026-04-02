@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowUp, ChevronDown } from 'lucide-react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import ChapterViewer from '../components/ChapterViewer';
+import { getBooks, getChapter, getChaptersCount } from '../services/api';
 
 const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes }) => {
     const { bookId: urlBookId, chapter: urlChapter } = useParams();
@@ -34,8 +34,8 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/books');
-                setBooks(res.data);
+                const data = await getBooks();
+                setBooks(data);
             } catch (err) {
                 console.error('Error fetching books:', err);
             }
@@ -75,8 +75,8 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get(`http://localhost:5000/api/chapter/${bookIdx}/${chapter}?lang=${language}`);
-            setChapterData(res.data);
+            const data = await getChapter(bookIdx, chapter, language);
+            setChapterData(data);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching chapter:', err);
@@ -87,8 +87,8 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
 
     const fetchChaptersCount = async (bookIdx) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/chapters/${bookIdx}`);
-            setChaptersCount(res.data.count);
+            const data = await getChaptersCount(bookIdx);
+            setChaptersCount(data.count);
         } catch (err) {
             console.error('Error fetching chapter count:', err);
         }
