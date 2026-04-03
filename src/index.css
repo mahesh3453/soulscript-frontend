@@ -1010,13 +1010,24 @@ body {
 }
 
 .verse-num {
-  width: 32px;
+  width: 52px;
   flex-shrink: 0;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
   padding-top: 5px;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.verse-ref-small {
+  font-size: 0.6rem;
+  opacity: 0.8;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .verse-content {

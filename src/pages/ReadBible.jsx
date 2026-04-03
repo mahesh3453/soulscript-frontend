@@ -305,7 +305,7 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
                         </motion.div>
                     ) : (
                         <motion.div
-                            key={`${currentBookIdx}-${currentChapter}`}
+                            key={`${currentBookIdx}-${currentChapter}-${selectedMood}`}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}

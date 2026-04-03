@@ -117,13 +117,23 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
 
     return (
         <div className="chapter-viewer">
-            <motion.h2
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="chapter-title"
-            >
-                {chapterData.book} <span className="chapter-title-num">Chapter {chapterData.chapter}</span>
-            </motion.h2>
+            {chapterData.book === "Verses for Mood" ? (
+                <motion.h2
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="chapter-title"
+                >
+                    Mood: <span className="chapter-title-num">{chapterData.chapter}</span>
+                </motion.h2>
+            ) : (
+                <motion.h2
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="chapter-title"
+                >
+                    {chapterData.book} <span className="chapter-title-num">Chapter {chapterData.chapter}</span>
+                </motion.h2>
+            )}
 
             <motion.div
                 className={`verse-list font-${fontStyle}`}
@@ -131,8 +141,13 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
             >
-                {chapterData.verses.map((v) => {
-                    const vObj = { book: chapterData.book, chapter: chapterData.chapter, verse: v.verse };
+                {chapterData.verses.map((v, i) => {
+                    const isMoodFilter = chapterData.book === "Verses for Mood";
+                    const vObj = { 
+                        book: v.book || chapterData.book, 
+                        chapter: v.chapter || chapterData.chapter, 
+                        verse: v.verse 
+                    };
                     const bookmarked = isBookmarked(vObj);
                     const favorited = isFavorite(vObj);
                     const isHighlighted = activeHighlight === v.verse;
@@ -140,12 +155,20 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
 
                     return (
                         <div
-                            key={v.verse}
+                            key={`${vObj.book}-${vObj.chapter}-${vObj.verse}-${i}`}
                             id={`verse-${v.verse}`}
                             className={`verse-row ${isHighlighted ? 'verse-row--highlighted' : ''}`}
                             style={{ backgroundColor: moodStyle.rowBg }}
                         >
-                            <div className="verse-num">{v.verse}</div>
+                            <div className="verse-num">
+                                {isMoodFilter ? (
+                                    <div className="verse-ref-small">
+                                        {v.book.substring(0, 3)} {v.chapter}:{v.verse}
+                                    </div>
+                                ) : (
+                                    v.verse
+                                )}
+                            </div>
                             <div className="verse-content">
                                 <p className="verse-body">
                                     {v.text}
