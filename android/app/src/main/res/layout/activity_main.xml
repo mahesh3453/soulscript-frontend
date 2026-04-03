@@ -10,7 +10,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.Design.NoActionBar">
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -19,7 +19,7 @@
             android:background="#0f172a"
             app:title="SoulScript"
             app:titleTextColor="#ffffff"
-            app:popupTheme="@style/Theme.Design.Light" />
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -35,7 +35,7 @@
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <WebView
             android:id="@+id/webView"

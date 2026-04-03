@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.getcapacitor.BridgeActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : BridgeActivity() {
 
@@ -24,6 +25,7 @@ class MainActivity : BridgeActivity() {
     private val liveUrl = "https://soulscript-frontend.vercel.app/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
