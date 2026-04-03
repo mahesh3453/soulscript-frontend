@@ -1,9 +1,17 @@
 ext {
+    // Single Source of Truth for SoulScript (Stable Android 34)
     minSdkVersion = 24
-    compileSdkVersion = 36
-    targetSdkVersion = 36
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    
+    // Modern names for AGP 8.x
+    minSdk = 24
+    compileSdk = 34
+    targetSdk = 34
+    
+    // Dependencies
     androidxActivityVersion = '1.11.0'
-    androidxAppCompatVersion = '1.7.1'
+    androidxAppCompatVersion = '1.7.0'
     androidxCoordinatorLayoutVersion = '1.3.0'
     androidxCoreVersion = '1.17.0'
     androidxFragmentVersion = '1.8.9'
