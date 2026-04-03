@@ -28,7 +28,14 @@ const BottomNavbar = ({ userId }) => {
             key={item.to}
             to={item.to}
             className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
-            onClick={triggerHaptic}
+            onClick={(e) => {
+              triggerHaptic();
+              // Native Bridge for Profile (Requirement 12)
+              if (item.label === 'Me' && window.AndroidBridge) {
+                e.preventDefault();
+                window.AndroidBridge.openNativeProfile('SoulScript User', 'soulscript.user@faith.app');
+              }
+            }}
           >
             <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>
