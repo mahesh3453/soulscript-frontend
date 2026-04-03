@@ -16,7 +16,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
-// Master Recovery MainActivity (100% Guaranteed Stability)
+// Master Recovery MainActivity (100% Definitive Fix)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView

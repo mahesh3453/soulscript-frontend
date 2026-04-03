@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme. (Maximum Compatibility) -->
+    <!-- Base application theme. (Standard Compatibility) -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -9,14 +9,14 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <!-- Professional Stable Theme (The Fix for Inflation Crashes) -->
+    <!-- Professional Stable Theme (Fixes Inflation Crashes) -->
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
-    <!-- Professional Splash Theme (Splash API Stability) -->
+    <!-- Professional Splash Theme (Splash API) -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#0f172a</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
