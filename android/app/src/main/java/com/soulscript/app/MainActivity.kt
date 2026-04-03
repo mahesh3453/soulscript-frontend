@@ -16,7 +16,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
-// Definitive Fixed MainActivity: Switch to AppCompatActivity for 100% Stability
+// Final Stabilized MainActivity (Definitive Fix)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val liveUrl = "https://soulscript-frontend.vercel.app/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 1. MUST INITIALIZE SPLASH SCREEN BEFORE SUPER.ONCREATE
+        // 1. Mandatory Splash Screen call first!
         installSplashScreen()
         
         super.onCreate(savedInstanceState)
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         // 3. Initialize UI Components
         initNativeUI()
 
-        // 4. Check connection and load the live SoulScript PWA
+        // 4. Initial Load
         checkConnectionAndLoad()
     }
 
@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         setupWebView()
         setupRefreshLayout()
 
-        // Retry logic for poor connection
+        // Retry button for offline screen
         findViewById<Button>(R.id.btnRetry).setOnClickListener {
             checkConnectionAndLoad()
         }
@@ -69,11 +69,11 @@ class MainActivity : AppCompatActivity() {
         settings.cacheMode = WebSettings.LOAD_DEFAULT
         settings.setSupportZoom(false)
         
-        // Ensure cookies and session are handled correctly
+        // Session Persistence (Cookies)
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
         
-        // Bridge for the native "Me" profile screen
+        // Add JS Bridge for Native Profile
         webView.addJavascriptInterface(AndroidBridge(), "AndroidBridge")
 
         webView.webViewClient = object : WebViewClient() {
@@ -86,13 +86,10 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false
-                
-                // Keep WebView visible once loaded
                 webView.visibility = View.VISIBLE
             }
 
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-                // Only show offline screen for the main SoulScript domain
                 if (request?.isForMainFrame == true) {
                     showOfflineScreen()
                 }
