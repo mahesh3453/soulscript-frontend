@@ -287,28 +287,32 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
                                 </div>
                             </div>
 
-                            <div className="reader-select-group">
-                                <label className="reader-select-label">Mood Filter</label>
-                                <div className="reader-select-wrap">
-                                    <select
-                                        value={selectedMood}
-                                        onChange={handleMoodChange}
-                                        className="reader-select"
-                                    >
-                                        <option value="all">None (Show Chapter)</option>
-                                        <option value="happy">Happy</option>
-                                        <option value="sad">Sad</option>
-                                        <option value="peace">Peace</option>
-                                        <option value="anxiety">Anxiety</option>
-                                        <option value="fear">Fear</option>
-                                        <option value="hope">Hope</option>
-                                        <option value="gratitude">Gratitude</option>
-                                        <option value="loneliness">Loneliness</option>
-                                        <option value="strength">Strength</option>
-                                        <option value="faith">Faith</option>
-                                        <option value="healing">Healing</option>
-                                    </select>
-                                    <ChevronDown size={18} className="reader-select-icon" />
+                            <div className="reader-select-group reader-select-group--wide">
+                                <label className="reader-select-label">Filter by Mood</label>
+                                <div className="mood-chips-container">
+                                    {[
+                                        { id: 'all', label: 'None', icon: <BookOpen size={14} /> },
+                                        { id: 'happy', label: 'Happy', icon: <Smile size={14} /> },
+                                        { id: 'sad', label: 'Sad', icon: <Frown size={14} /> },
+                                        { id: 'peace', label: 'Peace', icon: <Heart size={14} /> },
+                                        { id: 'anxiety', label: 'Anxiety', icon: <ShieldAlert size={14} /> },
+                                        { id: 'fear', label: 'Fear', icon: <CloudRain size={14} /> },
+                                        { id: 'hope', label: 'Hope', icon: <Sunrise size={14} /> },
+                                        { id: 'gratitude', label: 'Gratitude', icon: <HandHeart size={14} /> },
+                                        { id: 'loneliness', label: 'Loneliness', icon: <Users size={14} /> },
+                                        { id: 'strength', label: 'Strength', icon: <Zap size={14} /> },
+                                        { id: 'faith', label: 'Faith', icon: <Cross size={14} /> },
+                                        { id: 'healing', label: 'Healing', icon: <Stethoscope size={14} /> }
+                                    ].map(mood => (
+                                        <button
+                                            key={mood.id}
+                                            onClick={() => setSelectedMood(mood.id)}
+                                            className={`mood-chip ${selectedMood === mood.id ? 'active' : ''}`}
+                                        >
+                                            <span className="mood-chip-icon">{mood.icon}</span>
+                                            <span className="mood-chip-label">{mood.label}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>

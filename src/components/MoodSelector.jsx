@@ -33,56 +33,23 @@ const MoodSelector = ({ selectedMood, onMoodSelect }) => {
         <div className="mood-selector">
             <h2 className="mood-title">How are you feeling today?</h2>
             
-            {/* Mobile Dropdown */}
-            <div className="mood-dropdown-container">
-                <button 
-                    className="mood-dropdown-toggle" 
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {activeMoodData ? (
-                        <div className="mood-dropdown-active">
-                            <span className="mood-dropdown-item-icon" style={{ color: activeMoodData.color, background: activeMoodData.bg }}>
-                                {activeMoodData.icon}
-                            </span>
-                            <span>{activeMoodData.label}</span>
-                        </div>
-                    ) : (
-                        <span>Select Mood</span>
-                    )}
-                    <ChevronDown size={20} className={`mood-dropdown-arrow ${isOpen ? 'open' : ''}`} />
-                </button>
-
-                <AnimatePresence>
-                    {isOpen && (
-                        <motion.div 
-                            className="mood-dropdown-menu"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            {moods.map((mood) => {
-                                const isActive = selectedMood === mood.id;
-                                return (
-                                    <button 
-                                        key={mood.id}
-                                        className={`mood-dropdown-item ${isActive ? 'active' : ''}`}
-                                        onClick={() => handleSelect(mood.id)}
-                                        style={{ '--mood-color': mood.color, '--mood-bg': mood.bg }}
-                                    >
-                                        <span className="mood-dropdown-item-icon" style={{ color: mood.color, background: mood.bg }}>
-                                            {mood.icon}
-                                        </span>
-                                        {mood.label}
-                                        {isActive && (
-                                            <span className="mood-dropdown-check" style={{ color: mood.color }}>✓</span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            {/* Mobile Chips (Replacing Dropdown) */}
+            <div className="mood-chips-mobile">
+                <div className="mood-chips-container">
+                    {moods.map((mood) => {
+                        const isActive = selectedMood === mood.id;
+                        return (
+                            <button
+                                key={mood.id}
+                                className={`mood-chip ${isActive ? 'active' : ''}`}
+                                onClick={() => onMoodSelect(mood.id)}
+                            >
+                                <span className="mood-chip-icon">{mood.icon}</span>
+                                <span className="mood-chip-label">{mood.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Desktop Grid */}
