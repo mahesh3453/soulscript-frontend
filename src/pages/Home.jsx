@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MoodSelector from '../components/MoodSelector';
 import VerseCard from '../components/VerseCard';
-import { getRandomVerse, getVerseByMood } from '../services/api';
+import { getRandomVerse, getVerseByMood, getSpecificVerse } from '../services/api';
 import { motion } from 'framer-motion';
 
 // Shared font key with the Read Bible page
@@ -29,14 +29,8 @@ const Home = ({ language }) => {
 
     // Re-fetch current state when language changes
     useEffect(() => {
-        // Skip initial load duplicates
         if (!verse) return;
-        
-        if (selectedMood) {
-            fetchVerseByMood(selectedMood, true); // true to avoid resetting 'selectedMood' if needed, but not strictly required
-        } else {
-            fetchRandomVerse();
-        }
+        translateCurrentVerse();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [language]);
 
@@ -70,6 +64,22 @@ const Home = ({ language }) => {
         } catch (err) {
             setError('Heavenly connection lost (Server Error)');
             console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const translateCurrentVerse = async () => {
+        if (!verse) return;
+        setLoading(true);
+        setError(null);
+        try {
+            // Using book name directly since backend mapping handles it
+            const data = await getSpecificVerse(verse.book, verse.chapter, verse.verse, language);
+            // Maintain current mood property if it's not in the response
+            setVerse(prev => ({ ...data, mood: prev?.mood || data.mood }));
+        } catch (err) {
+            console.error('Translation error:', err);
         } finally {
             setLoading(false);
         }
