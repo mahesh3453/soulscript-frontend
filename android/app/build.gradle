@@ -4,11 +4,14 @@ apply plugin: 'kotlin-android'
 android {
     namespace = "com.soulscript.app"
     compileSdk = 34
+    compileSdkVersion = 34
 
     defaultConfig {
         applicationId = "com.soulscript.app"
         minSdk = 24
+        minSdkVersion = 24
         targetSdk = 34
+        targetSdkVersion = 34
         versionCode = 1
         versionName = "1.0"
         
@@ -27,12 +30,12 @@ android {
     }
     
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 
@@ -44,18 +47,12 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    
-    // Core AndroidX
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
-    
-    // Material Engine (Definitive Fixed Version)
     implementation "com.google.android.material:material:1.11.0"
-    implementation "androidx.cardview:cardview:1.0.0"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
-    // Capacitor Native Bridge
     implementation project(':capacitor-android')
     implementation project(':capacitor-cordova-android-plugins')
 
