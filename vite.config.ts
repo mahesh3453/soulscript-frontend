@@ -43,7 +43,7 @@ export default defineConfig({
             urlPattern: ({ request }) => request.destination === 'font' || request.destination === 'image',
             handler: 'CacheFirst',
             options: {
-              cacheName: 'static-assets',
+              cacheName: 'static-assets-v2',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
@@ -55,7 +55,7 @@ export default defineConfig({
             urlPattern: ({ url }) => url.origin === 'https://soulscript-api-rhie.onrender.com' || url.pathname.startsWith('/api'),
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-data',
+              cacheName: 'api-data-v2',
               networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 100,
@@ -68,7 +68,7 @@ export default defineConfig({
             urlPattern: ({ url }) => url.pathname.includes('/chapter/') || url.pathname.includes('/mood/'),
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'bible-content',
+              cacheName: 'bible-content-v2',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
