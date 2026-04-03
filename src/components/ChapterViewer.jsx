@@ -96,17 +96,23 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
         }
     };
 
-    const getMoodColor = (mood) => {
-        const colors = {
-            happy: 'rgba(255, 182, 193, 0.2)',
-            sad: 'rgba(173, 216, 230, 0.2)',
-            peace: 'rgba(144, 238, 144, 0.2)',
-            anxious: 'rgba(255, 200, 150, 0.2)',
-            anxiety: 'rgba(255, 200, 150, 0.2)', // Map anxiety to anxious color
-            angry: 'rgba(255, 99, 71, 0.2)',
-            none: 'transparent'
+    const getMoodStyle = (mood) => {
+        const styles = {
+            happy:      { color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', rowBg: 'rgba(251,191,36,0.05)' },
+            sad:        { color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', rowBg: 'rgba(96,165,250,0.05)' },
+            anxiety:    { color: '#fb923c', bg: 'rgba(251,146,60,0.12)', rowBg: 'rgba(251,146,60,0.05)' },
+            peace:      { color: '#34d399', bg: 'rgba(52,211,153,0.12)', rowBg: 'rgba(52,211,153,0.05)' },
+            motivation: { color: '#c084fc', bg: 'rgba(192,132,252,0.12)', rowBg: 'rgba(192,132,252,0.05)' },
+            fear:       { color: '#818cf8', bg: 'rgba(129,140,248,0.12)', rowBg: 'rgba(129,140,248,0.05)' },
+            hope:       { color: '#f472b6', bg: 'rgba(244,114,182,0.12)', rowBg: 'rgba(244,114,182,0.05)' },
+            gratitude:  { color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', rowBg: 'rgba(167,139,250,0.05)' },
+            loneliness: { color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', rowBg: 'rgba(56,189,248,0.05)' },
+            strength:   { color: '#facc15', bg: 'rgba(250,204,21,0.12)', rowBg: 'rgba(250,204,21,0.05)' },
+            faith:      { color: '#e2b96e', bg: 'rgba(226,185,110,0.12)', rowBg: 'rgba(226,185,110,0.05)' },
+            healing:    { color: '#f87171', bg: 'rgba(248,113,113,0.12)', rowBg: 'rgba(248,113,113,0.05)' },
+            none:       { color: 'transparent', bg: 'transparent', rowBg: 'transparent' }
         };
-        return colors[mood?.toLowerCase()] || 'transparent';
+        return styles[mood?.toLowerCase()] || styles.none;
     };
 
     return (
@@ -130,21 +136,30 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
                     const bookmarked = isBookmarked(vObj);
                     const favorited = isFavorite(vObj);
                     const isHighlighted = activeHighlight === v.verse;
-                    const moodColor = getMoodColor(v.mood);
+                    const moodStyle = getMoodStyle(v.mood);
 
                     return (
                         <div
                             key={v.verse}
                             id={`verse-${v.verse}`}
                             className={`verse-row ${isHighlighted ? 'verse-row--highlighted' : ''}`}
-                            style={{ backgroundColor: moodColor }}
+                            style={{ backgroundColor: moodStyle.rowBg }}
                         >
                             <div className="verse-num">{v.verse}</div>
                             <div className="verse-content">
                                 <p className="verse-body">
                                     {v.text}
                                     {v.mood && v.mood !== 'none' && (
-                                        <span className="mood-badge" title={`Mood: ${v.mood}`}>
+                                        <span 
+                                            className="mood-badge" 
+                                            title={`Mood: ${v.mood}`}
+                                            style={{ 
+                                                color: moodStyle.color, 
+                                                backgroundColor: moodStyle.bg,
+                                                borderColor: moodStyle.color,
+                                                border: "1px solid"
+                                            }}
+                                        >
                                             {v.mood}
                                         </span>
                                     )}
