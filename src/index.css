@@ -1610,6 +1610,164 @@ a:focus-visible {
   transform: scale(0.96);
 }
 
+/* ===========================
+   MOBILE APP ENHANCEMENTS
+   =========================== */
+
+:root {
+  /* Dynamic Safe Area Insets for modern devices */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-nav-height: calc(70px + var(--safe-area-bottom));
+}
+
+/* Base Mobile Layout Adjustments */
+body {
+  padding-top: var(--safe-area-top);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; /* Recommended for native feel */
+}
+
+/* Ensure main content doesn't get hidden under bottom nav */
+.main-content {
+  padding-bottom: var(--bottom-nav-height);
+  min-height: calc(100vh - var(--safe-area-top) - var(--bottom-nav-height));
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Bottom Navbar Styling */
+.bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-height);
+  padding-bottom: var(--safe-area-bottom);
+  background: var(--secondary-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.bottom-navbar-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  padding: 8px 0;
+}
+
+.bottom-nav-icon {
+  display: flex;
+  padding: 6px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+  background: rgba(109, 40, 217, 0.12);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.9);
+}
+
+/* Skeleton Loaders */
+.skeleton-verse {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: var(--secondary-bg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.skeleton-num {
+  width: 24px;
+  height: 16px;
+  background: rgba(109, 40, 217, 0.1);
+  border-radius: 4px;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, 
+    rgba(109, 40, 217, 0.05) 25%, 
+    rgba(109, 40, 217, 0.1) 50%, 
+    rgba(109, 40, 217, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 100%; }
+  100% { background-position: -200% 100%; }
+}
+
+.skeleton-title {
+  height: 32px;
+  width: 200px;
+  background: rgba(109, 40, 217, 0.08);
+  margin: 20px auto 30px;
+  border-radius: 8px;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+/* Mobile Specific Tweaks */
+@media (max-width: 768px) {
+  .logo-text { font-size: 1.1rem; }
+  .navbar { height: calc(60px + var(--safe-area-top)); padding-top: var(--safe-area-top); }
+  
+  /* Hide standard footer in mobile, replaced by bottom nav */
+  .footer { display: none; }
+  
+  .reader-selectors { 
+    margin-bottom: 20px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+}
+
 /* --- Language Toggle UI --- */
 
 .nav-controls {
@@ -1678,6 +1836,124 @@ a:focus-visible {
 
 .dark .mood-badge {
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* Install Prompt Overlay */
+.install-prompt-overlay {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height) + 20px);
+  left: 20px;
+  right: 20px;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.install-prompt-card {
+  background: var(--secondary-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  pointer-events: all;
+  position: relative;
+}
+
+.install-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.install-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.install-icon-box {
+  width: 48px;
+  height: 48px;
+  background: var(--accent);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.install-text {
+  flex: 1;
+}
+
+.install-text h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text-main);
+}
+
+.install-text p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.install-btn {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.install-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.4);
+}
+
+/* Error Fallback */
+.error-fallback {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-bg);
+  padding: 20px;
+  text-align: center;
+}
+
+.error-fallback h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.error-fallback p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.error-fallback button {
+  padding: 12px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .no-verses-found {

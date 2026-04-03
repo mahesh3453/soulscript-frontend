@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SoulScript</string>
+    <string name="title_activity_main">SoulScript</string>
+    <string name="package_name">com.soulscript.app</string>
+    <string name="custom_url_scheme">com.soulscript.app</string>
+</resources>

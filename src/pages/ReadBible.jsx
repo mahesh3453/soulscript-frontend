@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowUp, ChevronDown } f
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import ChapterViewer from '../components/ChapterViewer';
 import { getBooks, getChapter, getChaptersCount, getVersesListByMood } from '../services/api';
+import { saveChapter, getChapterFromDB, saveMoodVerses, getMoodVersesFromDB } from '../services/db';
+import { ChapterSkeleton } from '../components/SkeletonVerse';
 
 const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes }) => {
     const { bookId: urlBookId, chapter: urlChapter } = useParams();
@@ -80,12 +82,20 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
         setLoading(true);
         setError(null);
         try {
+            // Try cache first
+            const cached = await getMoodVersesFromDB(mood, language);
+            if (cached) {
+                setChapterData(cached);
+                setLoading(false);
+            }
+
             const data = await getVersesListByMood(mood, language);
             setChapterData(data);
+            await saveMoodVerses(mood, language, data);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching mood verses:', err);
-            setError('Failed to load verses for this mood.');
+            if (!chapterData) setError('Failed to load verses for this mood.');
             setLoading(false);
         }
     };
@@ -94,13 +104,46 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
         setLoading(true);
         setError(null);
         try {
+            // Try cache first
+            const cached = await getChapterFromDB(bookIdx, chapter, language);
+            if (cached) {
+                setChapterData(cached);
+                setLoading(false);
+            }
+
             const data = await getChapter(bookIdx, chapter, language);
             setChapterData(data);
+            await saveChapter(bookIdx, chapter, language, data);
             setLoading(false);
+
+            // Preload next chapter in background
+            preloadNextChapter(bookIdx, chapter);
         } catch (err) {
             console.error('Error fetching chapter:', err);
-            setError('Failed to load chapter content.');
+            if (!chapterData) setError('Failed to load chapter content.');
             setLoading(false);
+        }
+    };
+
+    const preloadNextChapter = async (bookIdx, chapter) => {
+        try {
+            let nextBookIdx = bookIdx;
+            let nextChapter = chapter + 1;
+
+            if (nextChapter > chaptersCount && chaptersCount > 0) {
+                if (bookIdx < 65) {
+                    nextBookIdx = bookIdx + 1;
+                    nextChapter = 1;
+                } else return;
+            }
+
+            const cached = await getChapterFromDB(nextBookIdx, nextChapter, language);
+            if (!cached) {
+                const data = await getChapter(nextBookIdx, nextChapter, language);
+                await saveChapter(nextBookIdx, nextChapter, language, data);
+            }
+        } catch (e) {
+            // Silent fail for preloading
         }
     };
 
@@ -273,7 +316,7 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
                 </motion.div>
 
                 <AnimatePresence mode="wait">
-                    {loading ? (
+                    {loading && !chapterData ? (
                         <motion.div
                             key="loading"
                             initial={{ opacity: 0 }}
@@ -281,12 +324,7 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
                             exit={{ opacity: 0 }}
                             className="reader-loading"
                         >
-                            <div className="reader-spinner-wrap">
-                                <div className="reader-spinner reader-spinner-1"></div>
-                                <div className="reader-spinner reader-spinner-2"></div>
-                            </div>
-                            <p className="reader-loading-text">Preparing the scriptures...</p>
-                            <p className="reader-loading-sub">Loading chapter content</p>
+                            <ChapterSkeleton />
                         </motion.div>
                     ) : error ? (
                         <motion.div

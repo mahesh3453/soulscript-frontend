@@ -1,16 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import ReadBible from './pages/ReadBible';
-import Bookmarks from './pages/Bookmarks';
-import Favorites from './pages/Favorites';
-import Auth from './pages/Auth';
+import BottomNavbar from './components/BottomNavbar';
+import InstallPrompt from './components/InstallPrompt';
+import { ChapterSkeleton } from './components/SkeletonVerse';
 import { getBookmarks, getLikes } from './services/api';
 import './index.css';
 
+// Lazy load pages for performance
+const Home = lazy(() => import('./pages/Home'));
+const ReadBible = lazy(() => import('./pages/ReadBible'));
+const Bookmarks = lazy(() => import('./pages/Bookmarks'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const Auth = lazy(() => import('./pages/Auth'));
+
+const ErrorFallback = ({ error }) => (
+  <div className="error-fallback">
+    <h2>Something went wrong</h2>
+    <p>{error.message}</p>
+    <button onClick={() => window.location.reload()}>Reload App</button>
+  </div>
+);
+
 function App() {
-  console.log("NEW BUILD VERSION 3");
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('soul-script-theme');
     return saved ? saved === 'dark' : true;
@@ -20,7 +33,6 @@ function App() {
     return localStorage.getItem('language') || 'en';
   });
 
-  // Auth & Storage Global States
   const [userId, setUserId] = useState(() => {
     return localStorage.getItem('soulscript_userId') || null;
   });
@@ -55,38 +67,45 @@ function App() {
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
   return (
-    <Router>
-      <div className={`app-container ${darkMode ? 'dark' : 'light'}`}>
-        <Navbar 
-          darkMode={darkMode} toggleDarkMode={toggleDarkMode} 
-          language={language} setLanguage={setLanguage} 
-          userId={userId} handleLogout={handleLogout}
-        />
-        
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home language={language} />} />
-            <Route path="/login" element={<Auth setUserId={setUserId} />} />
-            <Route path="/read/:bookId?/:chapter?" element={
-              <ReadBible 
-                language={language} 
-                userId={userId} 
-                bookmarks={bookmarks} 
-                setBookmarks={setBookmarks}
-                likes={likes}
-                setLikes={setLikes}
-              />
-            } />
-            <Route path="/bookmarks" element={<Bookmarks language={language} userId={userId} bookmarks={bookmarks} setBookmarks={setBookmarks} />} />
-            <Route path="/favorites" element={<Favorites language={language} userId={userId} likes={likes} setLikes={setLikes} />} />
-          </Routes>
-        </main>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <Router>
+        <div className={`app-container ${darkMode ? 'dark' : 'light'}`}>
+          <Navbar 
+            darkMode={darkMode} toggleDarkMode={toggleDarkMode} 
+            language={language} setLanguage={setLanguage} 
+            userId={userId} handleLogout={handleLogout}
+          />
+          
+          <main className="main-content">
+            <Suspense fallback={<ChapterSkeleton />}>
+              <Routes>
+                <Route path="/" element={<Home language={language} />} />
+                <Route path="/login" element={<Auth setUserId={setUserId} />} />
+                <Route path="/read/:bookId?/:chapter?" element={
+                  <ReadBible 
+                    language={language} 
+                    userId={userId} 
+                    bookmarks={bookmarks} 
+                    setBookmarks={setBookmarks}
+                    likes={likes}
+                    setLikes={setLikes}
+                  />
+                } />
+                <Route path="/bookmarks" element={<Bookmarks language={language} userId={userId} bookmarks={bookmarks} setBookmarks={setBookmarks} />} />
+                <Route path="/favorites" element={<Favorites language={language} userId={userId} likes={likes} setLikes={setLikes} />} />
+              </Routes>
+            </Suspense>
+          </main>
 
-        <footer className="footer">
-          <p>&copy; {new Date().getFullYear()} SoulScript Bible Reader. Built with love and faith.</p>
-        </footer>
-      </div>
-    </Router>
+          <BottomNavbar userId={userId} />
+          <InstallPrompt />
+
+          <footer className="footer">
+            <p>&copy; {new Date().getFullYear()} SoulScript Bible Reader. Built with love and faith.</p>
+          </footer>
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

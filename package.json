@@ -6,19 +6,33 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open-android": "npx cap open android",
+    "cap:open-ios": "npx cap open ios"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
     "vite": "^8.0.1"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/keyboard": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@vitejs/plugin-react-swc": "^4.3.0",
     "axios": "^1.14.0",
     "framer-motion": "^12.38.0",
+    "idb": "^8.0.3",
     "lucide-react": "^1.7.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2"
+    "react-error-boundary": "^6.1.1",
+    "react-router-dom": "^7.13.2",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }
