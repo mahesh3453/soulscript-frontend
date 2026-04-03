@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowUp, ChevronDown } from 'lucide-react';
+import {
+    ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowUp, ChevronDown,
+    Smile, Frown, Heart, ShieldAlert, CloudRain, Sunrise, HandHeart, Users, Zap, Cross, Stethoscope
+} from 'lucide-react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import ChapterViewer from '../components/ChapterViewer';
 import { getBooks, getChapter, getChaptersCount, getVersesListByMood } from '../services/api';
