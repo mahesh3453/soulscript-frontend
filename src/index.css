@@ -1648,3 +1648,31 @@ a:focus-visible {
 
 /* --- Mobile Menu Navigation --- */
 .mobile-menu-toggle { display: none; background: none; border: none; color: var(--text-main); cursor: pointer; padding: 8px; margin-left: 8px; align-items: center; justify-content: center; transition: color 0.2s ease; } .mobile-menu-toggle:hover { color: var(--accent); } @media (max-width: 768px) { .mobile-menu-toggle { display: flex; } .nav-links { position: absolute; top: var(--navbar-height); left: 0; right: 0; flex-direction: column; background: var(--secondary-bg); border-bottom: 1px solid var(--glass-border); padding: 0; gap: 0; clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow); } .nav-links.mobile-open { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); } .nav-link { width: 100%; padding: 1rem 2rem; display: flex; align-items: center; justify-content: flex-start; gap: 1rem; border-bottom: 1px solid var(--glass-border); } .nav-link:last-child { border-bottom: none; } }
+
+/* Mood Features */
+.mood-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-muted);
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.dark .mood-badge {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.no-verses-found {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 1.1rem;
+}

@@ -34,7 +34,12 @@ export const getChapter = async (book, chapter, lang = 'en') => {
     return response.data;
 };
 
-// Authentication
+export const getVersesListByMood = async (mood, lang = 'en') => {
+    const response = await axios.get(`${API_BASE_URL}/mood-filter/${mood}?lang=${lang}`);
+    return response.data;
+};
+
+
 export const login = async (identifier, password) => {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, { identifier, password });
     return response.data;

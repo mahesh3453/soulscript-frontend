@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowUp, ChevronDown } from 'lucide-react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import ChapterViewer from '../components/ChapterViewer';
-import { getBooks, getChapter, getChaptersCount } from '../services/api';
+import { getBooks, getChapter, getChaptersCount, getVersesListByMood } from '../services/api';
 
 const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes }) => {
     const { bookId: urlBookId, chapter: urlChapter } = useParams();
@@ -25,6 +25,7 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
     const [fontStyle, setFontStyle] = useState(
         () => localStorage.getItem('bible_font') || 'serif'
     );
+    const [selectedMood, setSelectedMood] = useState('all');
 
     const handleFontChange = (font) => {
         setFontStyle(font);
@@ -64,12 +65,30 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
     }, [urlBookId, urlChapter, books, navigate]);
 
     useEffect(() => {
-        if (currentBookIdx !== null && currentChapter !== null) {
-            fetchChapter(currentBookIdx, currentChapter);
-            fetchChaptersCount(currentBookIdx);
+        if (selectedMood === 'all') {
+            if (currentBookIdx !== null && currentChapter !== null) {
+                fetchChapter(currentBookIdx, currentChapter);
+                fetchChaptersCount(currentBookIdx);
+            }
+        } else {
+            fetchMoodVerses(selectedMood);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentBookIdx, currentChapter, language]);
+    }, [currentBookIdx, currentChapter, language, selectedMood]);
+
+    const fetchMoodVerses = async (mood) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await getVersesListByMood(mood, language);
+            setChapterData(data);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching mood verses:', err);
+            setError('Failed to load verses for this mood.');
+            setLoading(false);
+        }
+    };
 
     const fetchChapter = async (bookIdx, chapter) => {
         setLoading(true);
@@ -106,13 +125,19 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
         const newBookIdx = parseInt(e.target.value);
         const book = books.find(b => b.index === newBookIdx);
         if (book) {
+            setSelectedMood('all');
             navigate(`/read/${book.abbrev.toLowerCase()}/1`);
         }
     };
 
     const handleChapterChange = (e) => {
         const newChapter = parseInt(e.target.value);
+        setSelectedMood('all');
         navigate(`/read/${bookId}/${newChapter}`);
+    };
+
+    const handleMoodChange = (e) => {
+        setSelectedMood(e.target.value);
     };
 
     const nextChapter = async () => {
@@ -214,6 +239,31 @@ const ReadBible = ({ language, userId, bookmarks, likes, setBookmarks, setLikes 
                                         {Array.from({ length: chaptersCount }, (_, i) => i + 1).map(ch => (
                                             <option key={ch} value={ch}>{ch}</option>
                                         ))}
+                                    </select>
+                                    <ChevronDown size={18} className="reader-select-icon" />
+                                </div>
+                            </div>
+
+                            <div className="reader-select-group">
+                                <label className="reader-select-label">Mood Filter</label>
+                                <div className="reader-select-wrap">
+                                    <select
+                                        value={selectedMood}
+                                        onChange={handleMoodChange}
+                                        className="reader-select"
+                                    >
+                                        <option value="all">None (Show Chapter)</option>
+                                        <option value="happy">Happy</option>
+                                        <option value="sad">Sad</option>
+                                        <option value="peace">Peace</option>
+                                        <option value="anxiety">Anxiety</option>
+                                        <option value="fear">Fear</option>
+                                        <option value="hope">Hope</option>
+                                        <option value="gratitude">Gratitude</option>
+                                        <option value="loneliness">Loneliness</option>
+                                        <option value="strength">Strength</option>
+                                        <option value="faith">Faith</option>
+                                        <option value="healing">Healing</option>
                                     </select>
                                     <ChevronDown size={18} className="reader-select-icon" />
                                 </div>

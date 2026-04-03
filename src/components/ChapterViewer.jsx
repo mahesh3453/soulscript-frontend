@@ -96,6 +96,19 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
         }
     };
 
+    const getMoodColor = (mood) => {
+        const colors = {
+            happy: 'rgba(255, 182, 193, 0.2)',
+            sad: 'rgba(173, 216, 230, 0.2)',
+            peace: 'rgba(144, 238, 144, 0.2)',
+            anxious: 'rgba(255, 200, 150, 0.2)',
+            anxiety: 'rgba(255, 200, 150, 0.2)', // Map anxiety to anxious color
+            angry: 'rgba(255, 99, 71, 0.2)',
+            none: 'transparent'
+        };
+        return colors[mood?.toLowerCase()] || 'transparent';
+    };
+
     return (
         <div className="chapter-viewer">
             <motion.h2
@@ -117,16 +130,25 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
                     const bookmarked = isBookmarked(vObj);
                     const favorited = isFavorite(vObj);
                     const isHighlighted = activeHighlight === v.verse;
+                    const moodColor = getMoodColor(v.mood);
 
                     return (
                         <div
                             key={v.verse}
                             id={`verse-${v.verse}`}
                             className={`verse-row ${isHighlighted ? 'verse-row--highlighted' : ''}`}
+                            style={{ backgroundColor: moodColor }}
                         >
                             <div className="verse-num">{v.verse}</div>
                             <div className="verse-content">
-                                <p className="verse-body">{v.text}</p>
+                                <p className="verse-body">
+                                    {v.text}
+                                    {v.mood && v.mood !== 'none' && (
+                                        <span className="mood-badge" title={`Mood: ${v.mood}`}>
+                                            {v.mood}
+                                        </span>
+                                    )}
+                                </p>
                             </div>
                             <div className="verse-actions">
                                 <button
@@ -157,6 +179,9 @@ const ChapterViewer = ({ chapterData, onUpdate, highlightedVerse, bookId, fontSt
                         </div>
                     );
                 })}
+                {chapterData.verses.length === 0 && (
+                    <div className="no-verses-found">No verses found for this mood</div>
+                )}
             </motion.div>
         </div>
     );
