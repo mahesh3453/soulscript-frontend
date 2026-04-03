@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme. (Standard Compatibility) -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <!-- Base application theme. (Standard Material Engine) -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <!-- Professional Stable Theme (Fixes Crash) -->
-    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!-- Professional Stable Theme (Definitive Material) -->
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
-    <!-- Professional Splash Theme (Splash API) -->
+    <!-- Professional Splash Theme (Material API) -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#0f172a</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>

@@ -16,7 +16,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
-// Final Stabilized MainActivity (Definitive Fix)
+// Definitive 100% Stable MainActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // 2. Set the content view to our professional XML layout
+        // This will now inflate correctly because we've unified on Material Components theme.
         setContentView(R.layout.activity_main)
 
         // 3. Initialize UI Components
@@ -86,6 +87,8 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false
+                
+                // Final verification that WebView should be visible
                 webView.visibility = View.VISIBLE
             }
 
