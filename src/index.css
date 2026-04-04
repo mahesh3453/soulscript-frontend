@@ -198,8 +198,8 @@ body {
 
 .mood-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   margin-top: 8px;
 }
 
@@ -207,28 +207,29 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 18px 12px;
-  border-radius: 18px;
+  gap: 8px;
+  padding: 14px 8px;
+  border-radius: 16px;
   background: var(--mood-bg, var(--secondary-bg));
-  border: 1.5px solid transparent;
+  border: 2px solid transparent;
   cursor: pointer;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-muted);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
-  min-height: 88px;
+  min-height: 80px;
 }
 
 .mood-card:hover {
   border-color: var(--mood-color, var(--accent));
   color: var(--mood-color, var(--accent));
-  box-shadow: var(--card-shadow);
-  background: var(--mood-bg, rgba(109,40,217,0.08));
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  background: var(--mood-bg, rgba(109,40,217,0.15));
+  transform: translateY(-2px);
 }
 
 .mood-card--active {
@@ -242,10 +243,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--mood-bg, rgba(109,40,217,0.1));
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: white; /* Make the icon background white for contrast */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   transition: transform 0.2s ease;
 }
 
@@ -255,10 +257,11 @@ body {
 }
 
 .mood-card-label {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.1;
+  color: var(--text-main); /* More visible label */
 }
 
 .mood-card-active-dot {
@@ -557,7 +560,11 @@ body {
   .mood-btn     { padding: 10px 16px; font-size: 0.85rem; }
   .hero-section { margin-bottom: 40px; }
   .subtitle     { font-size: 1.1rem; }
-  .mood-grid    { display: none; }
+  .mood-grid    { 
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
   .mood-dropdown-container {
     display: block;
     position: relative;
@@ -577,8 +584,14 @@ body {
   .subtitle   { font-size: 1rem; }
   .mood-btn   { padding: 8px 14px; font-size: 0.82rem; }
   .mood-buttons { gap: 6px; }
-  .mood-grid  { display: none; }
-  .mood-card  { min-height: 80px; padding: 14px 8px; }
+  .mood-grid  { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; 
+  }
+  .mood-card  { min-height: 70px; padding: 12px 6px; border-radius: 14px; }
+  .mood-card-icon { width: 30px; height: 30px; }
+  .mood-card-label { font-size: 0.7rem; }
 
   .verse-text { font-size: 1.2rem; }
   .verse-card { padding: 20px 16px; border-radius: 20px; }
