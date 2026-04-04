@@ -566,12 +566,7 @@ body {
     gap: 12px;
   }
   .mood-dropdown-container {
-    display: block;
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    z-index: 50;
+    display: none;
   }
 }
 
@@ -585,7 +580,7 @@ body {
   .mood-btn   { padding: 8px 14px; font-size: 0.82rem; }
   .mood-buttons { gap: 6px; }
   .mood-grid  { 
-    display: grid; 
+    display: grid !important; 
     grid-template-columns: repeat(3, 1fr); 
     gap: 10px; 
   }
@@ -2038,12 +2033,12 @@ body {
 
 @media (max-width: 768px) {
   .mood-chips-mobile {
-    display: block;
-    margin: 12px -20px 20px;
-    padding: 0 20px;
+    display: none;
   }
   .mood-grid {
-    display: none;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
 }
 
