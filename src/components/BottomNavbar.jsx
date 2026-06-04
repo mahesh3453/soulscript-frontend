@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, Bookmark, Heart, User } from 'lucide-react';
+import { Home, BookOpen, Bookmark, Heart, User, MessageCircle } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 const BottomNavbar = ({ userId }) => {
@@ -17,6 +17,7 @@ const BottomNavbar = ({ userId }) => {
     { to: '/read', icon: <BookOpen size={22} />, label: 'Read' },
     { to: '/bookmarks', icon: <Bookmark size={22} />, label: 'Saved' },
     { to: '/favorites', icon: <Heart size={22} />, label: 'Likes' },
+    { to: userId ? '/chat' : '/login', icon: <MessageCircle size={22} />, label: 'Chat' },
     { to: userId ? '/profile' : '/login', icon: <User size={22} />, label: userId ? 'Me' : 'Login' },
   ];
 
@@ -25,7 +26,7 @@ const BottomNavbar = ({ userId }) => {
       <div className="bottom-navbar-inner">
         {navItems.map((item) => (
           <NavLink
-            key={item.to}
+            key={item.label}
             to={item.to}
             className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
             onClick={(e) => {

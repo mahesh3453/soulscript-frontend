@@ -30,7 +30,11 @@ const Auth = ({ setUserId }) => {
             }
             
             const newUserId = data.userId;
+            const newToken = data.token;
             localStorage.setItem('soulscript_userId', newUserId);
+            if (newToken) {
+                localStorage.setItem('soulscript_token', newToken);
+            }
             
             setTimeout(() => {
                 setUserId(newUserId);

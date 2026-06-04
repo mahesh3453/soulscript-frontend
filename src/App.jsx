@@ -15,6 +15,7 @@ const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 const Favorites = lazy(() => import('./pages/Favorites'));
 const Auth = lazy(() => import('./pages/Auth'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Chat = lazy(() => import('./pages/Chat'));
 
 const ErrorFallback = ({ error }) => (
   <div className="error-fallback">
@@ -53,6 +54,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('soulscript_userId');
+    localStorage.removeItem('soulscript_token');
     setUserId(null);
   };
 
@@ -95,6 +97,7 @@ function App() {
                 <Route path="/bookmarks" element={<Bookmarks language={language} userId={userId} bookmarks={bookmarks} setBookmarks={setBookmarks} />} />
                 <Route path="/favorites" element={<Favorites language={language} userId={userId} likes={likes} setLikes={setLikes} />} />
                 <Route path="/profile" element={<Profile userId={userId} handleLogout={handleLogout} />} />
+                <Route path="/chat" element={<Chat userId={userId} />} />
               </Routes>
             </Suspense>
           </main>

@@ -52,7 +52,10 @@ export default defineConfig({
           },
           {
             // API calls (NetworkFirst to get latest, but work offline)
-            urlPattern: ({ url }) => url.origin === 'https://soulscript-api-rhie.onrender.com' || url.pathname.startsWith('/api'),
+            urlPattern: ({ url }) => 
+              url.origin === 'https://soulscript-api-rhie.onrender.com' || 
+              url.origin.includes('localhost') ||
+              url.pathname.startsWith('/api'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-data-v2',

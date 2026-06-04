@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Sun, Moon, BookOpen, Heart, Bookmark, Home as HomeIcon, User as UserIcon, LogOut, Menu, X } from 'lucide-react';
+import { Sun, Moon, BookOpen, Heart, Bookmark, Home as HomeIcon, User as UserIcon, LogOut, Menu, X, MessageCircle } from 'lucide-react';
 
 const Navbar = ({ darkMode, toggleDarkMode, language, setLanguage, userId, handleLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,6 +32,10 @@ const Navbar = ({ darkMode, toggleDarkMode, language, setLanguage, userId, handl
           <NavLink to="/favorites" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
             <Heart size={18} className="nav-icon" />
             <span className="nav-label">Favorites</span>
+          </NavLink>
+          <NavLink to={userId ? "/chat" : "/login"} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+            <MessageCircle size={18} className="nav-icon" />
+            <span className="nav-label">Chat</span>
           </NavLink>
         </div>
 

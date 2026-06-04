@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://soulscript-api-rhie.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 console.log("API BASE:", API_BASE_URL);
 
@@ -79,5 +79,59 @@ export const getLikes = async (userId) => {
 
 export const removeLike = async (id) => {
     const response = await axios.delete(`${API_BASE_URL}/likes/${id}`);
+    return response.data;
+};
+
+// Chat APIs
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('soulscript_token');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+};
+
+export const getChatUsers = async () => {
+    const response = await axios.get(`${API_BASE_URL}/chat/users`, getAuthHeaders());
+    return response.data;
+};
+
+export const getChatHistory = async (otherUserId, before = '') => {
+    const url = before 
+        ? `${API_BASE_URL}/chat/history/${otherUserId}?before=${before}` 
+        : `${API_BASE_URL}/chat/history/${otherUserId}`;
+    const response = await axios.get(url, getAuthHeaders());
+    return response.data;
+};
+
+export const sendChatMessage = async (receiverId, message, attachmentUrl = null, attachmentType = null) => {
+    const payload = { receiverId, message, attachmentUrl, attachmentType };
+    const response = await axios.post(`${API_BASE_URL}/chat/send`, payload, getAuthHeaders());
+    return response.data;
+};
+
+export const sendHeartbeat = async () => {
+    const response = await axios.post(`${API_BASE_URL}/chat/heartbeat`, {}, getAuthHeaders());
+    return response.data;
+};
+
+export const sendTypingStatus = async (receiverId, isTyping) => {
+    const response = await axios.post(`${API_BASE_URL}/chat/typing`, { receiverId, isTyping }, getAuthHeaders());
+    return response.data;
+};
+
+export const uploadChatFile = async (file) => {
+    const formData = new FormData();
+    formData.append('attachment', file);
+    
+    const config = getAuthHeaders();
+    config.headers = {
+        ...config.headers,
+        'Content-Type': 'multipart/form-data'
+    };
+    
+    const response = await axios.post(`${API_BASE_URL}/chat/upload`, formData, config);
+    return response.data;
+};
+
+export const addChatContact = async (identifier) => {
+    const response = await axios.post(`${API_BASE_URL}/chat/contacts`, { identifier }, getAuthHeaders());
     return response.data;
 };
