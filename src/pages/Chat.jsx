@@ -38,6 +38,17 @@ const Chat = ({ userId }) => {
     const chatContainerRef = useRef(null);
     const fileInputRef = useRef(null);
     const prevUnreadCountsRef = useRef({});
+    const activeUserRef = useRef(null);
+    const messagesRef = useRef([]);
+
+    // Synchronize refs to avoid interval closures from depending on state
+    useEffect(() => {
+        activeUserRef.current = activeUser;
+    }, [activeUser]);
+
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
 
     // Get absolute API base URL for attachments
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -82,7 +93,7 @@ const Chat = ({ userId }) => {
                     
                     // If unread count has increased, and we are not currently active in that user's chat
                     if (user.unreadCount > prevCount) {
-                        const isCurrentActive = activeUser && activeUser._id === user._id;
+                        const isCurrentActive = activeUserRef.current && activeUserRef.current._id === user._id;
                         if (!isCurrentActive) {
                             triggerMessageNotification(user);
                         }
@@ -97,14 +108,17 @@ const Chat = ({ userId }) => {
                 prevUnreadCountsRef.current = nextCounts;
 
                 // Update active user context if they are in the list
-                if (activeUser) {
-                    const updatedActive = data.find(u => u._id === activeUser._id);
+                if (activeUserRef.current) {
+                    const updatedActive = data.find(u => u._id === activeUserRef.current._id);
                     if (updatedActive) {
-                        setActiveUser(prev => ({
-                            ...prev,
-                            lastSeen: updatedActive.lastSeen,
-                            isTyping: updatedActive.isTyping
-                        }));
+                        setActiveUser(prev => {
+                            if (!prev) return null;
+                            return {
+                                ...prev,
+                                lastSeen: updatedActive.lastSeen,
+                                isTyping: updatedActive.isTyping
+                            };
+                        });
                     }
                 }
                 
@@ -119,8 +133,8 @@ const Chat = ({ userId }) => {
 
         loadUsers();
 
-        // Polling users and heartbeat
-        const userPollingInterval = setInterval(loadUsers, 5000);
+        // Polling users every 3 seconds for Phase 2/3 and heartbeat
+        const userPollingInterval = setInterval(loadUsers, 3000);
         const heartbeatInterval = setInterval(() => {
             sendHeartbeat().catch(console.error);
         }, 15000);
@@ -129,7 +143,7 @@ const Chat = ({ userId }) => {
             clearInterval(userPollingInterval);
             clearInterval(heartbeatInterval);
         };
-    }, [userId, activeUser]);
+    }, [userId]);
 
     // Fetch messages when active user changes
     useEffect(() => {
@@ -163,25 +177,27 @@ const Chat = ({ userId }) => {
         loadChat();
     }, [activeUser?._id, userId]);
 
-    // Poll for new messages for active conversation
+    // Poll for new messages for active conversation (reduced interval, handles closures cleanly)
     useEffect(() => {
-        if (!userId || !activeUser) return;
+        const currentActiveUserId = activeUser?._id;
+        if (!userId || !currentActiveUserId) return;
 
         const pollNewMessages = async () => {
             try {
-                const history = await getChatHistory(activeUser._id);
+                const history = await getChatHistory(currentActiveUserId);
                 
                 if (history.length > 0) {
-                    const latestStored = messages[messages.length - 1];
+                    const currentMessages = messagesRef.current;
+                    const latestStored = currentMessages[currentMessages.length - 1];
                     const latestPolled = history[history.length - 1];
 
                     // Check for status receipt updates
-                    const statusChanged = messages.some((m) => {
+                    const statusChanged = currentMessages.some((m) => {
                         const polledMsg = history.find(h => h._id === m._id);
                         return polledMsg && polledMsg.status !== m.status;
                     });
 
-                    if (!latestStored || latestStored._id !== latestPolled._id || history.length !== messages.length || statusChanged) {
+                    if (!latestStored || latestStored._id !== latestPolled._id || history.length !== currentMessages.length || statusChanged) {
                         const container = chatContainerRef.current;
                         const shouldScroll = container 
                             ? container.scrollHeight - container.scrollTop - container.clientHeight < 180 
@@ -192,7 +208,7 @@ const Chat = ({ userId }) => {
                             setTimeout(scrollToBottom, 100);
                         }
                     }
-                } else if (messages.length > 0) {
+                } else if (messagesRef.current.length > 0) {
                     setMessages([]);
                 }
             } catch (err) {
@@ -200,9 +216,10 @@ const Chat = ({ userId }) => {
             }
         };
 
-        const messagePollInterval = setInterval(pollNewMessages, 5000);
+        // Poll messages every 2.5 seconds for snappy updates
+        const messagePollInterval = setInterval(pollNewMessages, 2500);
         return () => clearInterval(messagePollInterval);
-    }, [activeUser, userId, messages]);
+    }, [activeUser?._id, userId]);
 
     // Clean timers
     useEffect(() => {
