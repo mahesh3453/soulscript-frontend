@@ -436,7 +436,7 @@ const Chat = ({ userId }) => {
     };
 
     return (
-        <div className="chat-page-container container">
+        <div className="chat-page-container">
             
             {/* In-App Push Notification banner */}
             <AnimatePresence>
@@ -542,7 +542,7 @@ const Chat = ({ userId }) => {
                 <div className="chat-thread-container">
                     {activeUser ? (
                         <>
-                            {/* Chat Thread Header */}
+                            {/* Chat Thread Header - Sticky */}
                             <div className="chat-thread-header">
                                 <button 
                                     className="chat-thread-back-btn" 
