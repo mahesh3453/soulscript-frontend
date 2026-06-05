@@ -2173,10 +2173,14 @@ body {
   top: var(--navbar-height);
   left: 0;
   right: 0;
-  bottom: 0;
+  /* Use dvh so the container shrinks when mobile keyboard opens */
+  height: calc(100dvh - var(--navbar-height));
+  bottom: unset;
   display: flex;
   overflow: hidden;
   z-index: 999;
+  /* Smooth height transition when keyboard appears/disappears */
+  transition: height 0.15s ease;
 }
 
 .chat-card {
@@ -2671,12 +2675,79 @@ body {
    RESPONSIVE DESIGN FOR CHAT
    ========================================= */
 
+/* =========================================
+   BOTTOM NAVBAR: CHAT PAGE VISIBILITY RULES
+   ========================================= */
+
+/*
+  Desktop / Laptop:
+  Always hide the bottom navbar on the chat page.
+  (Bottom navbar is a mobile-only element by design,
+   but this ensures it NEVER shows on desktop chat page)
+*/
+body.chat-page .bottom-navbar {
+  display: none !important;
+}
+
+/*
+  On desktop, the main-content has padding-bottom for the bottom navbar.
+  Remove it on the chat page since the chat is position:fixed.
+*/
+body.chat-page .main-content {
+  padding-bottom: 0;
+}
+
 @media (max-width: 768px) {
-  .chat-page-container {
-    /* On mobile: still fixed full screen below navbar */
-    top: var(--navbar-height);
+  /*
+    Mobile - Contacts List Screen:
+    Show the bottom navbar so user can navigate away.
+    We re-display it here to override the desktop rule above.
+  */
+  body.chat-page .bottom-navbar {
+    display: flex !important;
   }
 
+  /*
+    Mobile - Conversation Open:
+    Hide the bottom navbar completely to give the chat
+    full-screen space (like WhatsApp).
+  */
+  body.chat-conversation-open .bottom-navbar {
+    display: none !important;
+  }
+
+  /*
+    When conversation is open on mobile, the freed bottom-nav
+    space is automatically used because .chat-page-container
+    uses 100dvh which accounts for the keyboard and the
+    absence of the bottom navbar.
+  */
+  body.chat-conversation-open .chat-page-container {
+    /* Ensure it fills the full screen (below top navbar) */
+    height: calc(100dvh - var(--navbar-height));
+  }
+
+  /* Restore bottom-nav padding for other pages on mobile */
+  body:not(.chat-page) .main-content {
+    padding-bottom: var(--bottom-nav-height);
+  }
+
+  .chat-page-container {
+    /* On mobile contacts list: leave room for the bottom navbar */
+    height: calc(100dvh - var(--navbar-height) - var(--bottom-nav-height));
+  }
+
+  body.chat-conversation-open .chat-page-container {
+    /* Conversation open: use all space */
+    height: calc(100dvh - var(--navbar-height));
+  }
+
+  /* Smooth transition between list/conversation heights */
+  .chat-page-container {
+    transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Chat card fills its container */
   .chat-card {
     height: 100%;
   }
@@ -2713,7 +2784,7 @@ body {
     pointer-events: auto;
   }
 
-  /* Hide sidebar when chat is active on mobile */
+  /* Hide sidebar interaction when chat is active on mobile */
   .mobile-chat-active .chat-sidebar {
     pointer-events: none;
   }

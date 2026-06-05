@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, ChevronLeft, User, Circle, ArrowLeft, MessageSquare, Clock, Paperclip, FileText, Download, Loader2, UserPlus, X, Bell } from 'lucide-react';
@@ -61,6 +61,52 @@ const Chat = ({ userId }) => {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // ── Body class management for bottom-navbar hiding ──────────────────
+    // Add 'chat-page' to body on mount so CSS can hide the bottom navbar on desktop
+    useEffect(() => {
+        document.body.classList.add('chat-page');
+        return () => {
+            document.body.classList.remove('chat-page');
+            document.body.classList.remove('chat-conversation-open');
+        };
+    }, []);
+
+    // Add/remove 'chat-conversation-open' when a conversation is selected
+    useEffect(() => {
+        if (activeUser) {
+            document.body.classList.add('chat-conversation-open');
+        } else {
+            document.body.classList.remove('chat-conversation-open');
+        }
+    }, [activeUser]);
+
+    // ── Mobile keyboard / visualViewport handling ─────────────────────────
+    // Adjusts the chat container height so the input bar stays above the keyboard
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.visualViewport) return;
+
+        const handleViewportResize = () => {
+            const vv = window.visualViewport;
+            const chatContainer = document.querySelector('.chat-page-container');
+            if (chatContainer) {
+                // offsetTop accounts for navbar; bottom gap accounts for virtual keyboard
+                const availableHeight = vv.height + vv.offsetTop;
+                chatContainer.style.height = `${availableHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navbar-height')) || 80)}px`;
+            }
+        };
+
+        window.visualViewport.addEventListener('resize', handleViewportResize);
+        window.visualViewport.addEventListener('scroll', handleViewportResize);
+
+        return () => {
+            window.visualViewport.removeEventListener('resize', handleViewportResize);
+            window.visualViewport.removeEventListener('scroll', handleViewportResize);
+            // Reset inline style on unmount
+            const chatContainer = document.querySelector('.chat-page-container');
+            if (chatContainer) chatContainer.style.height = '';
+        };
+    }, []);
 
     // Request desktop notifications permission
     useEffect(() => {
