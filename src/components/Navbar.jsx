@@ -44,6 +44,7 @@ const Navbar = ({ darkMode, toggleDarkMode, language, setLanguage, userId, handl
             <button 
               className={`lang-btn ${language === 'en' ? 'active' : ''}`}
               onClick={() => setLanguage('en')}
+              title="English"
             >
               EN
             </button>
@@ -51,8 +52,17 @@ const Navbar = ({ darkMode, toggleDarkMode, language, setLanguage, userId, handl
             <button 
               className={`lang-btn ${language === 'hi' ? 'active' : ''}`}
               onClick={() => setLanguage('hi')}
+              title="Hindi"
             >
               HI
+            </button>
+            <span className="lang-divider">|</span>
+            <button 
+              className={`lang-btn ${language === 'mr' ? 'active' : ''}`}
+              onClick={() => setLanguage('mr')}
+              title="Marathi"
+            >
+              MR
             </button>
           </div>
 
