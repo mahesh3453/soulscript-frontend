@@ -156,3 +156,13 @@ export const addChatContact = async (identifier) => {
     const response = await axios.post(`${API_BASE_URL}/chat/contacts`, { identifier }, config);
     return response.data;
 };
+
+// Delete a message: deleteType = 'everyone' | 'me'
+export const deleteMessage = async (messageId, deleteType) => {
+    const config = getAuthHeaders();
+    const response = await axios.delete(`${API_BASE_URL}/chat/message/${messageId}`, {
+        ...config,
+        data: { deleteType }
+    });
+    return response.data;
+};

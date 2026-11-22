@@ -2874,6 +2874,248 @@ body.chat-page .main-content {
   text-shadow: 0 0 4px rgba(52, 211, 153, 0.2);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   MESSAGE OPTIONS — Three-dot menu & Delete actions
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Trigger wrapper — positions the button + dropdown relative to the bubble-wrap */
+.msg-options-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* Show the trigger button when hovering the entire message row */
+.chat-message-row:hover .msg-options-trigger {
+  opacity: 1;
+}
+
+/* On touch devices, always show (no hover available) */
+@media (hover: none) {
+  .msg-options-trigger {
+    opacity: 1;
+  }
+}
+
+/* Position: sent messages (right) → button appears to the LEFT of the bubble */
+.trigger-left {
+  order: -1;
+  margin-right: 4px;
+}
+
+/* Position: received messages (left) → button appears to the RIGHT of the bubble */
+.trigger-right {
+  order: 1;
+  margin-left: 4px;
+}
+
+/* The ⋮ button itself */
+.msg-options-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.msg-options-btn:hover {
+  background: var(--glass-border);
+  color: var(--accent);
+}
+
+/* Dropdown menu card */
+.msg-options-menu {
+  position: absolute;
+  top: 100%;
+  z-index: 100;
+  background: var(--secondary-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 6px;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+/* Sent messages → dropdown opens to the left */
+.menu-left {
+  right: 0;
+}
+
+/* Received messages → dropdown opens to the right */
+.menu-right {
+  left: 0;
+}
+
+/* Each option row */
+.msg-option-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.msg-option-item:hover {
+  background: var(--primary-bg);
+}
+
+/* "Delete for Everyone" — danger variant */
+.msg-option-item.msg-option-danger {
+  color: #ef4444;
+}
+
+.msg-option-item.msg-option-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ── Deleted message placeholder ── */
+.msg-deleted-bubble {
+  opacity: 0.65;
+  font-style: italic;
+}
+
+.message-right .msg-deleted-bubble {
+  background: rgba(109, 40, 217, 0.12) !important;
+}
+
+.message-left .msg-deleted-bubble {
+  background: var(--primary-bg) !important;
+}
+
+.chat-deleted-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.chat-deleted-icon {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* ── Deleting animation ── */
+.msg-deleting {
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.msg-deleting-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 2px 0;
+}
+
+/* ── Delete for Everyone — Confirmation Dialog ── */
+.delete-confirm-card {
+  text-align: center;
+  padding: 32px 28px 24px;
+  max-width: 320px;
+}
+
+.delete-confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  margin: 0 auto 16px;
+}
+
+.delete-confirm-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+}
+
+.delete-confirm-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.delete-confirm-cancel {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.delete-confirm-cancel:hover {
+  background: var(--primary-bg);
+}
+
+.delete-confirm-delete {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+
+.delete-confirm-delete:hover {
+  background: #dc2626;
+}
+
 /* Attachment Input Controls */
 .chat-attach-btn {
   background: none;

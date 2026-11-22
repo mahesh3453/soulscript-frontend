@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, ChevronLeft, User, Circle, ArrowLeft, MessageSquare, Clock, Paperclip, FileText, Download, Loader2, UserPlus, X, Bell } from 'lucide-react';
-import { getChatUsers, getChatHistory, sendChatMessage, sendHeartbeat, sendTypingStatus, uploadChatFile, addChatContact } from '../services/api';
+import { Send, ChevronLeft, User, ArrowLeft, MessageSquare, Clock, Paperclip, FileText, Download, Loader2, UserPlus, X, Bell, MoreVertical, Trash2, AlertTriangle } from 'lucide-react';
+import { getChatUsers, getChatHistory, sendChatMessage, sendHeartbeat, sendTypingStatus, uploadChatFile, addChatContact, deleteMessage } from '../services/api';
 
 const Chat = ({ userId }) => {
     const navigate = useNavigate();
@@ -34,6 +34,14 @@ const Chat = ({ userId }) => {
         setLoadingUsers(true);
         setRetryCount(prev => prev + 1);
     };
+
+    // ── Message Deletion State ────────────────────────────────────────────
+    // Currently open message options menu: messageId string or null
+    const [openMenuMsgId, setOpenMenuMsgId] = useState(null);
+    // Confirmation dialog for Delete for Everyone
+    const [confirmDelete, setConfirmDelete] = useState(null); // { messageId, type }
+    // Per-message deletion loading
+    const [deletingMsgId, setDeletingMsgId] = useState(null);
 
     // In-App Toast Notification state
     const [inAppNotification, setInAppNotification] = useState(null);
@@ -74,7 +82,6 @@ const Chat = ({ userId }) => {
     };
 
     // ── Body class management for bottom-navbar hiding ──────────────────
-    // Add 'chat-page' to body on mount so CSS can hide the bottom navbar on desktop
     useEffect(() => {
         document.body.classList.add('chat-page');
         return () => {
@@ -83,7 +90,6 @@ const Chat = ({ userId }) => {
         };
     }, []);
 
-    // Add/remove 'chat-conversation-open' when a conversation is selected
     useEffect(() => {
         if (activeUser) {
             document.body.classList.add('chat-conversation-open');
@@ -93,7 +99,6 @@ const Chat = ({ userId }) => {
     }, [activeUser]);
 
     // ── Mobile keyboard / visualViewport handling ─────────────────────────
-    // Adjusts the chat container height so the input bar stays above the keyboard
     useEffect(() => {
         if (typeof window === 'undefined' || !window.visualViewport) return;
 
@@ -101,7 +106,6 @@ const Chat = ({ userId }) => {
             const vv = window.visualViewport;
             const chatContainer = document.querySelector('.chat-page-container');
             if (chatContainer) {
-                // offsetTop accounts for navbar; bottom gap accounts for virtual keyboard
                 const availableHeight = vv.height + vv.offsetTop;
                 chatContainer.style.height = `${availableHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navbar-height')) || 80)}px`;
             }
@@ -113,7 +117,6 @@ const Chat = ({ userId }) => {
         return () => {
             window.visualViewport.removeEventListener('resize', handleViewportResize);
             window.visualViewport.removeEventListener('scroll', handleViewportResize);
-            // Reset inline style on unmount
             const chatContainer = document.querySelector('.chat-page-container');
             if (chatContainer) chatContainer.style.height = '';
         };
@@ -135,6 +138,21 @@ const Chat = ({ userId }) => {
         }
     }, [userId, navigate]);
 
+    // Close message menu on outside click
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (!e.target.closest('.msg-options-menu') && !e.target.closest('.msg-options-btn')) {
+                setOpenMenuMsgId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('touchstart', handleOutsideClick);
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('touchstart', handleOutsideClick);
+        };
+    }, []);
+
     // Initial load and polling of contacts
     useEffect(() => {
         if (!userId) return;
@@ -143,12 +161,9 @@ const Chat = ({ userId }) => {
             try {
                 const data = await getChatUsers();
                 setUsers(data);
-                
-                // Track incoming messages for notifications
+
                 data.forEach(user => {
                     const prevCount = prevUnreadCountsRef.current[user._id] || 0;
-                    
-                    // If unread count has increased, and we are not currently active in that user's chat
                     if (user.unreadCount > prevCount) {
                         const isCurrentActive = activeUserRef.current && activeUserRef.current._id === user._id;
                         if (!isCurrentActive) {
@@ -157,14 +172,12 @@ const Chat = ({ userId }) => {
                     }
                 });
 
-                // Store current unread counts for comparison in next poll
                 const nextCounts = {};
                 data.forEach(user => {
                     nextCounts[user._id] = user.unreadCount;
                 });
                 prevUnreadCountsRef.current = nextCounts;
 
-                // Update active user context if they are in the list
                 if (activeUserRef.current) {
                     const updatedActive = data.find(u => u._id === activeUserRef.current._id);
                     if (updatedActive) {
@@ -178,11 +191,10 @@ const Chat = ({ userId }) => {
                         });
                     }
                 }
-                
+
                 setError(null);
             } catch (err) {
                 console.error('Failed to load chat users:', err);
-                // Handle session expiry (401 Unauthorized)
                 const status = err?.response?.status;
                 if (status === 401 || err?.message?.includes('No authentication token')) {
                     setError('session_expired');
@@ -200,7 +212,6 @@ const Chat = ({ userId }) => {
 
         loadUsers();
 
-        // Polling users every 3 seconds for Phase 2/3 and heartbeat
         userPollingIntervalRef.current = setInterval(loadUsers, 3000);
         heartbeatIntervalRef.current = setInterval(() => {
             sendHeartbeat().catch(console.error);
@@ -225,14 +236,12 @@ const Chat = ({ userId }) => {
             try {
                 const history = await getChatHistory(activeUser._id);
                 setMessages(history);
-                setHasMore(history.length === 50); // Pagination threshold
+                setHasMore(history.length === 50);
                 setTimeout(scrollToBottom, 100);
-                
-                // Reset unread count locally for this user
-                setUsers(prevUsers => 
+
+                setUsers(prevUsers =>
                     prevUsers.map(u => u._id === activeUser._id ? { ...u, unreadCount: 0 } : u)
                 );
-                // Sync notification ref count
                 prevUnreadCountsRef.current[activeUser._id] = 0;
             } catch (err) {
                 console.error('Failed to load chat history:', err);
@@ -244,7 +253,7 @@ const Chat = ({ userId }) => {
         loadChat();
     }, [activeUser?._id, userId]);
 
-    // Poll for new messages for active conversation (reduced interval, handles closures cleanly)
+    // Poll for new messages for active conversation
     useEffect(() => {
         const currentActiveUserId = activeUser?._id;
         if (!userId || !currentActiveUserId) return;
@@ -252,22 +261,21 @@ const Chat = ({ userId }) => {
         const pollNewMessages = async () => {
             try {
                 const history = await getChatHistory(currentActiveUserId);
-                
+
                 if (history.length > 0) {
                     const currentMessages = messagesRef.current;
                     const latestStored = currentMessages[currentMessages.length - 1];
                     const latestPolled = history[history.length - 1];
 
-                    // Check for status receipt updates
                     const statusChanged = currentMessages.some((m) => {
                         const polledMsg = history.find(h => h._id === m._id);
-                        return polledMsg && polledMsg.status !== m.status;
+                        return polledMsg && (polledMsg.status !== m.status || polledMsg.deletedForEveryone !== m.deletedForEveryone);
                     });
 
                     if (!latestStored || latestStored._id !== latestPolled._id || history.length !== currentMessages.length || statusChanged) {
                         const container = chatContainerRef.current;
-                        const shouldScroll = container 
-                            ? container.scrollHeight - container.scrollTop - container.clientHeight < 180 
+                        const shouldScroll = container
+                            ? container.scrollHeight - container.scrollTop - container.clientHeight < 180
                             : true;
 
                         setMessages(history);
@@ -283,7 +291,6 @@ const Chat = ({ userId }) => {
             }
         };
 
-        // Poll messages every 2.5 seconds for snappy updates
         const messagePollInterval = setInterval(pollNewMessages, 2500);
         return () => clearInterval(messagePollInterval);
     }, [activeUser?._id, userId]);
@@ -299,7 +306,6 @@ const Chat = ({ userId }) => {
     const triggerMessageNotification = (senderUser) => {
         const senderName = formatDisplayName(senderUser.identifier);
 
-        // 1. Trigger HTML5 Browser push notifications if minimized/hidden
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
             if (document.hidden) {
                 const notif = new Notification(`New Message from ${senderName}`, {
@@ -315,13 +321,7 @@ const Chat = ({ userId }) => {
             }
         }
 
-        // 2. Trigger In-App Notification preview toast
-        setInAppNotification({
-            user: senderUser,
-            name: senderName
-        });
-
-        // Auto-dismiss toast
+        setInAppNotification({ user: senderUser, name: senderName });
         setTimeout(() => {
             setInAppNotification(null);
         }, 5000);
@@ -352,7 +352,7 @@ const Chat = ({ userId }) => {
     // Handle typing events on text input changes
     const handleInputChange = (e) => {
         setNewMessage(e.target.value);
-        
+
         if (!isTypingState && activeUser) {
             setIsTypingState(true);
             sendTypingStatus(activeUser._id, true).catch(console.error);
@@ -374,7 +374,7 @@ const Chat = ({ userId }) => {
         if (!newMessage.trim() || !activeUser) return;
 
         const textToSend = newMessage.trim();
-        setNewMessage(''); // Clear input
+        setNewMessage('');
 
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         if (activeUser) {
@@ -392,6 +392,45 @@ const Chat = ({ userId }) => {
         }
     };
 
+    // ── Message Deletion Handlers ─────────────────────────────────────────
+
+    // Initiates deletion: 'me' deletes immediately, 'everyone' shows confirm dialog
+    const handleDeleteClick = (messageId, type) => {
+        setOpenMenuMsgId(null);
+        if (type === 'everyone') {
+            setConfirmDelete({ messageId, type });
+        } else {
+            executeDeletion(messageId, 'me');
+        }
+    };
+
+    // Executes the actual API deletion call
+    const executeDeletion = async (messageId, type) => {
+        setDeletingMsgId(messageId);
+        setConfirmDelete(null);
+        try {
+            await deleteMessage(messageId, type);
+
+            if (type === 'me') {
+                // Remove from local state immediately — will stay gone after polling
+                setMessages(prev => prev.filter(m => m._id !== messageId));
+            } else {
+                // Update the local message to show placeholder — polling will sync the other user
+                setMessages(prev => prev.map(m =>
+                    m._id === messageId
+                        ? { ...m, deletedForEveryone: true, message: '', attachmentUrl: null, attachmentType: null }
+                        : m
+                ));
+            }
+        } catch (err) {
+            console.error('Delete message error:', err);
+            const errMsg = err?.response?.data?.error || 'Failed to delete message.';
+            alert(errMsg);
+        } finally {
+            setDeletingMsgId(null);
+        }
+    };
+
     // Add Contact handler
     const handleAddContactSubmit = async (e) => {
         e.preventDefault();
@@ -404,8 +443,6 @@ const Chat = ({ userId }) => {
         try {
             const res = await addChatContact(newContactIdentifier);
             setModalSuccess(res.message || 'Contact added successfully!');
-            
-            // Prepend new contact to local users list
             setUsers(prev => [res.contact, ...prev]);
 
             setTimeout(() => {
@@ -502,13 +539,66 @@ const Chat = ({ userId }) => {
         return <span className="status-tick sent">✓</span>;
     };
 
+    // Helper: Render message content (normal, deleted-for-everyone, or attachment)
+    const renderMessageContent = (msg, isMe) => {
+        // Global deletion — show placeholder for both sides
+        if (msg.deletedForEveryone) {
+            return (
+                <p className="chat-deleted-placeholder">
+                    <span className="chat-deleted-icon">🚫</span>
+                    This message was deleted
+                </p>
+            );
+        }
+
+        const hasAttachment = !!msg.attachmentUrl;
+
+        return (
+            <>
+                {/* Inline Image Attachment */}
+                {hasAttachment && msg.attachmentType === 'image' && (
+                    <img
+                        src={getFileUrl(msg.attachmentUrl)}
+                        alt="Image Attachment"
+                        className="chat-image-attachment"
+                        onClick={() => window.open(getFileUrl(msg.attachmentUrl), '_blank')}
+                    />
+                )}
+
+                {/* Inline Document Attachment */}
+                {hasAttachment && msg.attachmentType === 'file' && (
+                    <div className="chat-file-attachment">
+                        <FileText size={20} className="file-icon" />
+                        <div className="file-details">
+                            <span className="file-name">
+                                {msg.attachmentUrl.split('/').pop().split('-').slice(1).join('-') || 'Document'}
+                            </span>
+                        </div>
+                        <a
+                            href={getFileUrl(msg.attachmentUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="file-download-btn"
+                            title="Download File"
+                        >
+                            <Download size={14} />
+                        </a>
+                    </div>
+                )}
+
+                {/* Message text */}
+                {msg.message && <p className="chat-message-text">{msg.message}</p>}
+            </>
+        );
+    };
+
     return (
         <div className="chat-page-container">
-            
+
             {/* In-App Push Notification banner */}
             <AnimatePresence>
                 {inAppNotification && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: -50, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -534,7 +624,7 @@ const Chat = ({ userId }) => {
             </AnimatePresence>
 
             <div className={`chat-card ${mobileView === 'chat' ? 'mobile-chat-active' : 'mobile-list-active'}`}>
-                
+
                 {/* Users Sidebar/Panel */}
                 <div className="chat-sidebar">
                     <div className="chat-sidebar-header">
@@ -542,11 +632,11 @@ const Chat = ({ userId }) => {
                             <ChevronLeft size={24} />
                         </button>
                         <h2>Conversations</h2>
-                        
+
                         {/* Add Contact Button */}
-                        <button 
-                            className="chat-add-user-btn" 
-                            onClick={() => setShowAddModal(true)} 
+                        <button
+                            className="chat-add-user-btn"
+                            onClick={() => setShowAddModal(true)}
                             title="Add Contact"
                         >
                             <UserPlus size={18} />
@@ -640,8 +730,8 @@ const Chat = ({ userId }) => {
                         <>
                             {/* Chat Thread Header - Sticky */}
                             <div className="chat-thread-header">
-                                <button 
-                                    className="chat-thread-back-btn" 
+                                <button
+                                    className="chat-thread-back-btn"
                                     onClick={() => setMobileView('list')}
                                     title="Back to list"
                                 >
@@ -665,13 +755,13 @@ const Chat = ({ userId }) => {
                             </div>
 
                             {/* Chat Messages Body */}
-                            <div 
-                                className="chat-messages-body" 
+                            <div
+                                className="chat-messages-body"
                                 ref={chatContainerRef}
                             >
                                 {hasMore && (
-                                    <button 
-                                        onClick={loadOlderMessages} 
+                                    <button
+                                        onClick={loadOlderMessages}
                                         className="chat-load-more-btn"
                                         disabled={loadingMore}
                                     >
@@ -693,55 +783,79 @@ const Chat = ({ userId }) => {
                                 ) : (
                                     <div className="chat-messages-list">
                                         {messages.map((msg) => {
-                                            const isMe = msg.senderId === userId;
-                                            const hasAttachment = !!msg.attachmentUrl;
+                                            const isMe = msg.senderId === userId || msg.senderId?.toString() === userId?.toString();
+                                            const isBeingDeleted = deletingMsgId === msg._id;
+                                            const isMenuOpen = openMenuMsgId === msg._id;
+                                            const isDeleted = msg.deletedForEveryone;
 
                                             return (
-                                                <div 
-                                                    key={msg._id} 
-                                                    className={`chat-message-row ${isMe ? 'message-right' : 'message-left'}`}
+                                                <div
+                                                    key={msg._id}
+                                                    className={`chat-message-row ${isMe ? 'message-right' : 'message-left'} ${isBeingDeleted ? 'msg-deleting' : ''}`}
                                                 >
                                                     <div className="chat-message-bubble-wrap">
-                                                        <div className={`chat-message-bubble ${hasAttachment ? 'has-attachment' : ''}`}>
-                                                            
-                                                            {/* Inline Image Attachment */}
-                                                            {hasAttachment && msg.attachmentType === 'image' && (
-                                                                <img 
-                                                                    src={getFileUrl(msg.attachmentUrl)} 
-                                                                    alt="Image Attachment" 
-                                                                    className="chat-image-attachment"
-                                                                    onClick={() => window.open(getFileUrl(msg.attachmentUrl), '_blank')}
-                                                                />
-                                                            )}
+                                                        {/* Three-dot options button — hidden for deleted messages */}
+                                                        {!isDeleted && (
+                                                            <div className={`msg-options-trigger ${isMe ? 'trigger-left' : 'trigger-right'}`}>
+                                                                <button
+                                                                    className="msg-options-btn"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setOpenMenuMsgId(isMenuOpen ? null : msg._id);
+                                                                    }}
+                                                                    title="Message options"
+                                                                    aria-label="Message options"
+                                                                >
+                                                                    <MoreVertical size={14} />
+                                                                </button>
 
-                                                            {/* Inline Document Attachment */}
-                                                            {hasAttachment && msg.attachmentType === 'file' && (
-                                                                <div className="chat-file-attachment">
-                                                                    <FileText size={20} className="file-icon" />
-                                                                    <div className="file-details">
-                                                                        <span className="file-name">
-                                                                            {msg.attachmentUrl.split('/').pop().split('-').slice(1).join('-') || 'Document'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <a 
-                                                                        href={getFileUrl(msg.attachmentUrl)} 
-                                                                        target="_blank" 
-                                                                        rel="noopener noreferrer" 
-                                                                        className="file-download-btn"
-                                                                        title="Download File"
-                                                                    >
-                                                                        <Download size={14} />
-                                                                    </a>
+                                                                {/* Options dropdown menu */}
+                                                                <AnimatePresence>
+                                                                    {isMenuOpen && (
+                                                                        <motion.div
+                                                                            initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                                                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                            exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                                                                            transition={{ duration: 0.12 }}
+                                                                            className={`msg-options-menu ${isMe ? 'menu-left' : 'menu-right'}`}
+                                                                        >
+                                                                            <button
+                                                                                className="msg-option-item"
+                                                                                onClick={() => handleDeleteClick(msg._id, 'me')}
+                                                                            >
+                                                                                <Trash2 size={14} />
+                                                                                <span>Delete for Me</span>
+                                                                            </button>
+                                                                            {/* Delete for Everyone — only available to the sender */}
+                                                                            {isMe && (
+                                                                                <button
+                                                                                    className="msg-option-item msg-option-danger"
+                                                                                    onClick={() => handleDeleteClick(msg._id, 'everyone')}
+                                                                                >
+                                                                                    <Trash2 size={14} />
+                                                                                    <span>Delete for Everyone</span>
+                                                                                </button>
+                                                                            )}
+                                                                        </motion.div>
+                                                                    )}
+                                                                </AnimatePresence>
+                                                            </div>
+                                                        )}
+
+                                                        <div className={`chat-message-bubble ${!!msg.attachmentUrl ? 'has-attachment' : ''} ${isDeleted ? 'msg-deleted-bubble' : ''}`}>
+                                                            {isBeingDeleted ? (
+                                                                <div className="msg-deleting-indicator">
+                                                                    <Loader2 size={14} className="mini-spinner" />
+                                                                    <span>Deleting...</span>
                                                                 </div>
+                                                            ) : (
+                                                                renderMessageContent(msg, isMe)
                                                             )}
 
-                                                            {/* Message text */}
-                                                            {msg.message && <p className="chat-message-text">{msg.message}</p>}
-                                                            
                                                             <div className="chat-message-meta">
                                                                 <Clock size={10} className="chat-meta-icon" />
                                                                 <span>{formatMessageTime(msg.createdAt)}</span>
-                                                                {isMe && renderStatusTicks(msg)}
+                                                                {isMe && !isDeleted && renderStatusTicks(msg)}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -762,11 +876,11 @@ const Chat = ({ userId }) => {
                                     onChange={handleFileChange}
                                     accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
                                 />
-                                
-                                <button 
-                                    type="button" 
-                                    className="chat-attach-btn" 
-                                    onClick={triggerFileInput} 
+
+                                <button
+                                    type="button"
+                                    className="chat-attach-btn"
+                                    onClick={triggerFileInput}
                                     disabled={uploadingFile}
                                     title="Attach File/Image"
                                 >
@@ -798,11 +912,49 @@ const Chat = ({ userId }) => {
 
             </div>
 
+            {/* ── Delete for Everyone Confirmation Dialog ── */}
+            <AnimatePresence>
+                {confirmDelete && (
+                    <div className="chat-modal-overlay">
+                        <motion.div
+                            initial={{ scale: 0.88, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.88, opacity: 0 }}
+                            transition={{ duration: 0.18 }}
+                            className="chat-modal-card delete-confirm-card"
+                        >
+                            <div className="delete-confirm-icon">
+                                <AlertTriangle size={28} />
+                            </div>
+                            <h3 className="delete-confirm-title">Delete for Everyone?</h3>
+                            <p className="delete-confirm-sub">
+                                This message will be removed from both sides of the conversation. This cannot be undone.
+                            </p>
+                            <div className="delete-confirm-actions">
+                                <button
+                                    className="delete-confirm-cancel"
+                                    onClick={() => setConfirmDelete(null)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="delete-confirm-delete"
+                                    onClick={() => executeDeletion(confirmDelete.messageId, 'everyone')}
+                                >
+                                    <Trash2 size={15} />
+                                    Delete
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Add Contact Modal overlay */}
             <AnimatePresence>
                 {showAddModal && (
                     <div className="chat-modal-overlay">
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
@@ -817,7 +969,7 @@ const Chat = ({ userId }) => {
 
                             <form onSubmit={handleAddContactSubmit} className="chat-modal-form">
                                 <p className="chat-modal-sub">Enter the registered email or mobile number of the user you want to chat with.</p>
-                                
+
                                 {modalError && <div className="chat-modal-error">{modalError}</div>}
                                 {modalSuccess && <div className="chat-modal-success">{modalSuccess}</div>}
 
