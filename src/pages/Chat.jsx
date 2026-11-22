@@ -27,6 +27,14 @@ const Chat = ({ userId }) => {
     const [modalError, setModalError] = useState(null);
     const [modalSuccess, setModalSuccess] = useState(null);
 
+    // Retry trigger: incrementing forces the useEffect to re-run loadUsers
+    const [retryCount, setRetryCount] = useState(0);
+    const handleRetryLoadUsers = () => {
+        setError(null);
+        setLoadingUsers(true);
+        setRetryCount(prev => prev + 1);
+    };
+
     // In-App Toast Notification state
     const [inAppNotification, setInAppNotification] = useState(null);
 
@@ -40,6 +48,9 @@ const Chat = ({ userId }) => {
     const prevUnreadCountsRef = useRef({});
     const activeUserRef = useRef(null);
     const messagesRef = useRef([]);
+    // Interval refs so polling can be cleared on session expiry
+    const userPollingIntervalRef = useRef(null);
+    const heartbeatIntervalRef = useRef(null);
 
     // Synchronize refs to avoid interval closures from depending on state
     useEffect(() => {
@@ -171,7 +182,17 @@ const Chat = ({ userId }) => {
                 setError(null);
             } catch (err) {
                 console.error('Failed to load chat users:', err);
-                setError('Failed to load user list.');
+                // Handle session expiry (401 Unauthorized)
+                const status = err?.response?.status;
+                if (status === 401 || err?.message?.includes('No authentication token')) {
+                    setError('session_expired');
+                    clearInterval(userPollingIntervalRef.current);
+                    clearInterval(heartbeatIntervalRef.current);
+                } else if (status >= 500) {
+                    setError('server_error');
+                } else {
+                    setError('network_error');
+                }
             } finally {
                 setLoadingUsers(false);
             }
@@ -180,16 +201,16 @@ const Chat = ({ userId }) => {
         loadUsers();
 
         // Polling users every 3 seconds for Phase 2/3 and heartbeat
-        const userPollingInterval = setInterval(loadUsers, 3000);
-        const heartbeatInterval = setInterval(() => {
+        userPollingIntervalRef.current = setInterval(loadUsers, 3000);
+        heartbeatIntervalRef.current = setInterval(() => {
             sendHeartbeat().catch(console.error);
         }, 15000);
 
         return () => {
-            clearInterval(userPollingInterval);
-            clearInterval(heartbeatInterval);
+            clearInterval(userPollingIntervalRef.current);
+            clearInterval(heartbeatIntervalRef.current);
         };
-    }, [userId]);
+    }, [userId, retryCount]);
 
     // Fetch messages when active user changes
     useEffect(() => {
@@ -539,7 +560,36 @@ const Chat = ({ userId }) => {
                                 <span>Loading contacts...</span>
                             </div>
                         ) : error && users.length === 0 ? (
-                            <div className="chat-error">{error}</div>
+                            <div className="chat-error-state">
+                                {error === 'session_expired' ? (
+                                    <>
+                                        <MessageSquare size={32} className="chat-empty-icon" />
+                                        <p className="chat-error-title">Session Expired</p>
+                                        <p className="chat-error-sub">Your session has expired. Please log in again to continue.</p>
+                                        <button className="chat-retry-btn" onClick={() => navigate('/login')}>
+                                            Log In Again
+                                        </button>
+                                    </>
+                                ) : error === 'server_error' ? (
+                                    <>
+                                        <MessageSquare size={32} className="chat-empty-icon" />
+                                        <p className="chat-error-title">Server Error</p>
+                                        <p className="chat-error-sub">The server encountered an error. Please try again shortly.</p>
+                                        <button className="chat-retry-btn" onClick={handleRetryLoadUsers}>
+                                            Retry
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <MessageSquare size={32} className="chat-empty-icon" />
+                                        <p className="chat-error-title">Could Not Load Contacts</p>
+                                        <p className="chat-error-sub">Check your internet connection and try again.</p>
+                                        <button className="chat-retry-btn" onClick={handleRetryLoadUsers}>
+                                            Retry
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         ) : users.length === 0 ? (
                             <div className="chat-empty-users">
                                 <MessageSquare size={32} className="chat-empty-icon" />

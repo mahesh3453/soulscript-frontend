@@ -85,53 +85,74 @@ export const removeLike = async (id) => {
 // Chat APIs
 const getAuthHeaders = () => {
     const token = localStorage.getItem('soulscript_token');
-    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    if (!token) {
+        throw new Error('No authentication token found. Please log in.');
+    }
+    return { headers: { Authorization: `Bearer ${token}` } };
 };
 
+// Axios response interceptor to handle 401 globally
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Token expired or invalid — clear stored credentials
+            localStorage.removeItem('soulscript_token');
+            localStorage.removeItem('soulscript_userId');
+            // Don't redirect here; let the component handle navigation
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const getChatUsers = async () => {
-    const response = await axios.get(`${API_BASE_URL}/chat/users`, getAuthHeaders());
+    const config = getAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/chat/users`, config);
     return response.data;
 };
 
 export const getChatHistory = async (otherUserId, before = '') => {
+    const config = getAuthHeaders();
     const url = before 
-        ? `${API_BASE_URL}/chat/history/${otherUserId}?before=${before}` 
+        ? `${API_BASE_URL}/chat/history/${otherUserId}?before=${encodeURIComponent(before)}` 
         : `${API_BASE_URL}/chat/history/${otherUserId}`;
-    const response = await axios.get(url, getAuthHeaders());
+    const response = await axios.get(url, config);
     return response.data;
 };
 
 export const sendChatMessage = async (receiverId, message, attachmentUrl = null, attachmentType = null) => {
-    const payload = { receiverId, message, attachmentUrl, attachmentType };
-    const response = await axios.post(`${API_BASE_URL}/chat/send`, payload, getAuthHeaders());
+    const config = getAuthHeaders();
+    const payload = { receiverId, message: message || '', attachmentUrl, attachmentType };
+    const response = await axios.post(`${API_BASE_URL}/chat/send`, payload, config);
     return response.data;
 };
 
 export const sendHeartbeat = async () => {
-    const response = await axios.post(`${API_BASE_URL}/chat/heartbeat`, {}, getAuthHeaders());
+    const config = getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/chat/heartbeat`, {}, config);
     return response.data;
 };
 
 export const sendTypingStatus = async (receiverId, isTyping) => {
-    const response = await axios.post(`${API_BASE_URL}/chat/typing`, { receiverId, isTyping }, getAuthHeaders());
+    const config = getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/chat/typing`, { receiverId, isTyping }, config);
     return response.data;
 };
 
 export const uploadChatFile = async (file) => {
+    const config = getAuthHeaders();
     const formData = new FormData();
     formData.append('attachment', file);
-    
-    const config = getAuthHeaders();
     config.headers = {
         ...config.headers,
         'Content-Type': 'multipart/form-data'
     };
-    
     const response = await axios.post(`${API_BASE_URL}/chat/upload`, formData, config);
     return response.data;
 };
 
 export const addChatContact = async (identifier) => {
-    const response = await axios.post(`${API_BASE_URL}/chat/contacts`, { identifier }, getAuthHeaders());
+    const config = getAuthHeaders();
+    const response = await axios.post(`${API_BASE_URL}/chat/contacts`, { identifier }, config);
     return response.data;
 };
